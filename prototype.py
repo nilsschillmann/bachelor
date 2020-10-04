@@ -10,31 +10,26 @@ from skimage import io
 from skimage import color
 from skimage.filters import gaussian
 from skimage.transform import resize
+from skimage.feature import hog
 
+from skimage import exposure
 
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
-#import pandas as pd
-
 import numpy as np
+import math
 
-
-#from cv2 import GaussianBlur
-
-#from gauss import difference_of_gaussians
+import timeit
 
 #%% load image
 path = r"../JenAesthetics/small/Giovanni_Francesco_Romanelli_-_" \
        "The_Finding_of_Moses_-_Google_Art_Project.jpg"
        
-
 img_high = io.imread(path)
 
 #%% low resolution
-
 img = resize(img_high, (896, 1191))
-
 
 #%% convert to lab
 img_lab = color.rgb2lab(img)
@@ -43,15 +38,10 @@ img_lab = color.rgb2lab(img)
 redgreen = LinearSegmentedColormap.from_list('a', ['green', 'white','red'])
 yellowblue = LinearSegmentedColormap.from_list('b', ['blue','white', 'yellow'])
 
-
-
 #%% plot full image
-
 fig, ax = plt.subplots(figsize=(4, 5), dpi=300)
-
 ax.imshow(img)
 ax.axis('off')
-
 
 #%% plot images
 fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 7), dpi=300)
@@ -73,11 +63,11 @@ ax3.set_title("b channel")
 ax3.axis('off')
 
 
-#%% Gaus Filter
+#%% Gaus Filter old
 
-''' Old 
+'''
 sigmas = [2, 5, 10, 20, 50, 100]
-sigmas.reverse()
+#sigmas.reverse()
 
 gausfiltered = []
 #gausfiltered = pd.DataFrame(index=sigmas, dtype='float64')
@@ -88,20 +78,25 @@ for sigma in sigmas:
 
 '''
 
+#%% calculating sigmas
+sigmas = [2, 5, 10, 20, 50, 100] # sigmas i want to get
 
-sigmas = [2, 5, 10, 20, 50, 100]
-sigma_start = 10
-sigma_range = 6
-#sigmas = [2**x for x in range(sigma_start, sigma_range)]
+s2 = lambda s1, s3 : math.sqrt(s3**2 - s1**2)
+working_sigmas = [sigmas[0]] # sigmas i have to add up
+for s in sigmas[1:]:
+    last = working_sigmas[-1]
+    working_sigmas.append(s2(last, s))
+
+
+#%% Gaus Filter new
+
 gausfiltered = []
 
 img_filtered = img_lab[:,:,0]
 
-
-for i in range(sigma_range):
-    img_filtered = gaussian(img_filtered, sigma_start)
+for s in working_sigmas:
+    img_filtered = gaussian(img_filtered, s)
     gausfiltered.append(img_filtered)
-
 
 #%% plot filtered
 
@@ -118,21 +113,27 @@ for ax, gaus, sigma in zip(axs, gausfiltered, sigmas):
 differences = np.diff(np.array(gausfiltered), n=1, axis=0)
 
 
-#%%
+#%% plot differences
 
-fig, axs = plt.subplots(len(differences), 1, figsize=(1.3, 8), dpi=300)
+fig, axs = plt.subplots(len(differences), 1, figsize=(1.3, 6), dpi=300)
 
 for ax, diff in zip(axs, differences):
     ax.imshow(diff, cmap='Greys_r')
     ax.axis('off')
 
-#%%
-#diff = difference_of_gaussians(img_lab[:,:,0], 100)
-#io.imshow(diff, cmap='Greys_r')
+#%% histogram of oriented gradients
+
+fd, hog_image = hog(differences[0], orientations=4, pixels_per_cell=(8, 8),
+                    cells_per_block=(1, 1), visualize=True, multichannel=False)
 
 
+#%% plot hog
 
-#%% cv2 Gaus
+fig, ax = plt.subplots(figsize=(4, 5), dpi=300)
 
-#imggcv = GaussianBlur(img_lab[:,:,0], (401,401), 100)
-#io.imshow(imggcv, cmap='Greys_r')
+
+ax.axis('off')
+ax.imshow(hog_image, cmap=plt.cm.gray)
+ax.set_title('Histogram of Oriented Gradients')
+#plt.show()
+
