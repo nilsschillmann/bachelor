@@ -12,21 +12,25 @@ from skimage.filters import gaussian
 from skimage.transform import resize
 from skimage.feature import hog
 
-from skimage import exposure
-
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
 import numpy as np
 import math
 
-import timeit
+from pipeline import pipeline
 
 #%% load image
 path = r"../JenAesthetics/small/Giovanni_Francesco_Romanelli_-_" \
        "The_Finding_of_Moses_-_Google_Art_Project.jpg"
        
 img_high = io.imread(path)
+
+#%% execute pipeline
+pipe = pipeline(resize_=0.2)
+hogs = pipe.run(img_high)
+
+
 
 #%% low resolution
 img = resize(img_high, (896, 1191))
@@ -123,7 +127,7 @@ for ax, diff in zip(axs, differences):
 
 #%% histogram of oriented gradients
 
-fd, hog_image = hog(differences[0], orientations=4, pixels_per_cell=(8, 8),
+fd, hog_image = hog(differences[0], orientations=8, pixels_per_cell=(8, 8),
                     cells_per_block=(1, 1), visualize=True, multichannel=False)
 
 
@@ -134,6 +138,16 @@ fig, ax = plt.subplots(figsize=(4, 5), dpi=300)
 
 ax.axis('off')
 ax.imshow(hog_image, cmap=plt.cm.gray)
-ax.set_title('Histogram of Oriented Gradients')
+#ax.set_title('Histogram of Oriented Gradients')
 #plt.show()
 
+
+
+'''
+Probleme:
+    
+    zu große feature vektoren
+    hog zellengröße in pixel => unterschiedlich große vektoren bei unterschiedlich großen bildern
+    
+
+'''
