@@ -17,7 +17,7 @@ import numpy as np
 import time
 from datetime import timedelta
 
-#from multiprocessing import Pool
+import multiprocessing as mp
 
 
 logging.basicConfig(level=logging.INFO)
@@ -107,17 +107,27 @@ class pipeline():
     
     @time_logger
     def create_scalespaces(imgs, working_sigmas):
+        #TODO: multiprocessing
+        
+        # pool = mp.Pool(processes=4)
+        # scalespaces = [pool.apply(pipeline.create_scalespace, args=(img, working_sigmas)) for img in imgs]
+        
+                
         scalespaces = []
         for img in imgs:
-            scalespace = [img]
-    
-            img_filtered = img
             
-            for s in working_sigmas:
-                img_filtered = gaussian(img_filtered, s, multichannel=False)
-                scalespace.append(img_filtered)
-            scalespaces.append(scalespace)
+            scalespaces.append(pipeline.create_scalespace(img, working_sigmas))
         return scalespaces
+    
+    def create_scalespace(img, working_sigmas):
+        scalespace = [img]
+    
+        img_filtered = img
+        
+        for s in working_sigmas:
+            img_filtered = gaussian(img_filtered, s, multichannel=False)
+            scalespace.append(img_filtered)
+        return scalespace
     
     @time_logger
     def create_differences(scalespaces):
@@ -131,31 +141,25 @@ class pipeline():
 
     #@time_logger
     def create_hogs_pyramid(image, depth):
-        
+        #TODO: multiprocessing
         feature_vector = []
         for i in [4**a for a in range(depth)]:
-            x, y = map(lambda a : a//i,image.shape[:2])
-            feature_vector.append(hog(image, orientations=8, pixels_per_cell=(x,y),cells_per_block=(1,1), multichannel=False))
+            x, y = map(lambda a : a//i, image.shape[:2])
+            feature_vector.append(hog(
+                image, 
+                orientations=8, 
+                pixels_per_cell=(x,y),
+                cells_per_block=(1,1), 
+                multichannel=False)
+            )
             
         return np.concatenate(feature_vector)
     
     @time_logger
     def create_feature_vector(self, differences, depth):
-        return np.concatenate(list(map(lambda a: pipeline.create_hogs_pyramid(a, depth), differences)))
+        return np.concatenate(list(map(
+            lambda a: pipeline.create_hogs_pyramid(a, depth),
+            differences)
+            ))
         
-        # return list(map(lambda image: hog(
-        #         image, 
-        #         orientations=8, 
-        #         pixels_per_cell=(16, 16),
-        #         cells_per_block=(1, 1), 
-        #         visualize=False, 
-        #         multichannel=False,
-        #         feature_vector=True
-        #     ), images))
-    
-
-    
-
-    
-
     
