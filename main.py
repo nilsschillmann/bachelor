@@ -12,8 +12,10 @@ from pipeline import pipeline
 import logging
 
 #%% load image
-path = r"../JenAesthetics/small/Giovanni_Francesco_Romanelli_-_" \
-       "The_Finding_of_Moses_-_Google_Art_Project.jpg"
+#path = r"../JenAesthetics/small/Giovanni_Francesco_Romanelli_-_" \
+#       "The_Finding_of_Moses_-_Google_Art_Project.jpg"
+       
+path = "Sebastiano_Ricci_002.jpg"
        
 img_high = io.imread(path)
 
