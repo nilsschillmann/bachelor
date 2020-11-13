@@ -7,13 +7,12 @@ import logging
 from functools import wraps
 from functools import lru_cache
 
-# from itertools import repeat
-
 from math import sqrt
 from skimage.transform import resize
 from skimage import color
 from skimage.filters import gaussian
-from skimage.feature import hog
+# from skimage.feature import hog
+from ownhog import hog
 
 import numpy as np
 
@@ -25,211 +24,220 @@ from datetime import timedelta
 import multiprocessing as mp
 
 
-os.system("taskset -p 0xff %d" % os.getpid())
+#os.system("taskset -p 0xff %d" % os.getpid())
 
 logging.basicConfig(level=logging.INFO)
 
 
 
-class pipeline():
-    
-    def __init__(self, 
-                 gauß_depth         =5, 
-                 hist_orientations  =8, 
-                 phog_depth         =3,
-                 resize_factor      =False 
+class Pipeline():
+
+    def __init__(self,
+                 hist_orientations  = 8,
+                 gauß_depth         = 5,
+                 phog_depth         = 3,
+                 resize_factor      = False
                  ):
-        self.gauß_depth = gauß_depth
+
         self.hist_orientations  = hist_orientations
+        self.gauß_depth         = gauß_depth
         self.phog_depth         = phog_depth
         self.resize_factor      = resize_factor
-        self.sigmas = tuple([4**n for n in range(gauß_depth)])
-        self.working_sigmas = None
-        self.calculate_sigmas()
-    
-    
+
+
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}(' \
+            f'{self.hist_orientations}, ' \
+            f'{self.gauß_depth}, ' \
+            f'{self.phog_depth}, ' \
+            f'{self.resize_factor})'
+
+
     def time_logger(function):
-        """
-        Decorate the given function to logg the execution time.
-
-        Parameters
-        ----------
-        function : function
-
-        Returns
-        -------
-        wrapper function
-
-        """
+        '''Decorate the given function to logg the execution time.'''
 
         @wraps(function)
         def wrapper(*args, **kwargs):
-            logging.info(f'execute {function.__name__}')
-            start_time = time.time()
-            result = function(*args, **kwargs)
-            executiontime = time.time() - start_time
-            logging.info('{} executed in {}'.
-                         format(function.__name__, timedelta(seconds=executiontime)))
+            logging.info(f'Execute {function.__name__} ...')
+            start_time      = time.time()
+            result          = function(*args, **kwargs)
+            executiontime   = time.time() - start_time
+            delta           = str(timedelta(seconds=executiontime))
+            logging.info(f'{function.__name__:<20} executed in {delta :>20}')
             return result
         return wrapper
-    
-    
+
+
     @time_logger
     def run(self, img, plot=False):
-        
-        if self.resize_factor:
+        '''Run the complete pipeline over a given Image.'''
+
+        logging.info(f'Picture shape: {img.shape}')
+
+        if self.resize_factor and self.resize_factor != 1:
             img = self.resize_image(img)
-        
+            logging.info(f'Picture resized shape: {img.shape}')
+
+        sigmas, working_sigmas = self.calculate_sigmas(max(img.shape)/2, self.gauß_depth)
+
+
         lab = self.convert2lab(img)
-        
-        scalespaces = self.create_scalespaces(lab)
-        
+        scalespaces = self.create_scalespaces(lab, sigmas)
         differences = self.create_differences(scalespaces)
-        
         feature_vector = self.create_feature_vector_mp(differences)
-        
-        if plot:
-            import plot
-            plot.plot_img(img)
-            plot.plot_lab(lab)
-            for scalespace in scalespaces:
-                plot.plot_scalespace(scalespace, labels=[0]+list(self.sigmas))
-            for diff in differences:
-                plot.plot_scalespace(diff)
-            parameter = {
-                'gauß_depth'        :self.gauß_depth,
-                'hist_orientations' :self.hist_orientations,
-                'phog_depth'        :self.phog_depth,
-                'resize_factor'     :self.resize_factor
-                }
-            plot.plot_vector(feature_vector, name='test', parameter=parameter)
-        
-        return feature_vector
-        
-        
-    
+
+        return lab, scalespaces, differences, feature_vector
+
+
     @time_logger
     def resize_image(self, img):
+        '''Return a resolution scaled version of an image.'''
         x, y = (round(a*self.resize_factor) for a in img.shape[:2])
-        
         return resize(img, (x, y))
-    
+
+
     @time_logger
     def convert2lab(self, img):
-        # convert the image in a multichannel lab image
+        '''Convert an rgb image to python list of Lab channels.'''
         converted = color.rgb2lab(img)
         # split the channels
         channels = [converted[:,:,i] for i in
                     range(converted.shape[-1])]
         return channels
-    
+
+
+    @staticmethod
     @time_logger
     @lru_cache(maxsize=None)
-    def calculate_sigmas(self):
-        logging.info(f"sigmas = {self.sigmas}")
-        s2 = lambda s1, s3 : sqrt(s3**2 - s1**2)
-        working_sigmas = [self.sigmas[0]] # sigmas i have to add up
-        for s in self.sigmas[1:]:
+    def calculate_sigmas(max_sigma, n):
+        '''Calculate sigmas for gausian filters.'''
+
+        std_max = 100
+        x = std_max**(1/(n-1))
+        factors = tuple((x**i / std_max) for i in range(1, n))
+
+        sigmas = tuple(max_sigma*i for i in factors)
+
+        #sigmas             = tuple([4**n for n in range(gauß_depth)])
+        #working_sigmas     = self.calculate_sigmas(self.sigmas)
+
+
+        def s2(s1, s3): return sqrt(s3**2 - s1**2)
+        working_sigmas = [sigmas[0]] # sigmas i have to add up
+        for s in sigmas[1:]:
             last = working_sigmas[-1]
             working_sigmas.append(s2(last, s))
-        
-        logging.info(f"working_sigma = {working_sigmas}")
-        self.working_sigmas = working_sigmas
-    
+
+        sig_string = ', '.join(f'{sigma:.2f}' for sigma in sigmas)
+        ws_string = ', '.join(f'{sigma:.2f}' for sigma in working_sigmas)
+        logging.info(f"sigmas = " + sig_string)
+        logging.info("working_sigmas = " + ws_string)
+
+        return sigmas, working_sigmas
+
+
     @time_logger
-    def create_scalespaces(self, imgs):
-        
-        os.system("taskset -p 0xff %d" % os.getpid())
+    def create_scalespaces(self, imgs, sigmas):
+        '''Return a list of gausian scalespaces for a list of images.'''
+        #os.system("taskset -p 0xff %d" % os.getpid())
+
+
         pool = mp.Pool(processes=4)
         scalespaces = [pool.apply_async(self.create_scalespace,
-                                        args=(img,)) for img in imgs]
+                                        args=(img, sigmas)) for img in imgs]
         output = [p.get() for p in scalespaces]
         return output
 
-    
-    
-    def create_scalespace(self, img):
+
+    def create_scalespace_chained(self, img, working_sigmas):
+        '''Return a gausian scalespace for an given image.'''
+
+
         scalespace = [img]
-    
         img_filtered = img
-        
-        for s in self.working_sigmas:
+        for s in working_sigmas:
             img_filtered = gaussian(img_filtered, s, multichannel=False)
             scalespace.append(img_filtered)
         return scalespace
-    
-    
-    # @time_logger
-    # def create_scalespaces_mp(imgs, sigmas):
-        
-    #     os.system("taskset -p 0xff %d" % os.getpid())
-    #     scalespaces = []        
-    #     for img in imgs:
-    #         pool = mp.Pool(processes=4)
-    #         scalespace = [pool.apply_async(gaussian, 
-    #                                   args=(img, s, {'multichannel':False})) for s in sigmas]
-    #         output = [p.get() for p in scalespace]
-    #         scalespaces.append(output)
-    #     return scalespaces
-        
-        
-    
+
+    def create_scalespace(self, img, sigmas):
+        '''Return a gausian scalespace for an given image.'''
+
+        scalespace = [img]
+        for s in sigmas:
+            scalespace.append(gaussian(img, s, multichannel=False))
+        return scalespace
+
     @time_logger
     def create_differences(self, scalespaces):
         differences = []
         for scalespace in scalespaces:
-            #diffs = np.diff(np.array(scalespace), axis=0)
             diffs = []
             for i in range(len(scalespace)-1):
                 diffs.append(scalespace[i] - scalespace[i+1])
-            
             differences.append(diffs)
         return differences
 
 
     #@time_logger
-    def create_hogs_pyramid(image, depth, orientations):
-        #TODO: multiprocessing
-
-        
-        
+    def create_hogs_pyramid(self, image):
         feature_vector = []
-        for i in [2**a for a in range(depth)]:
+        for i in [2**a for a in range(self.phog_depth)]:
             x, y = map(lambda a : a//i, image.shape[:2])
             feature_vector.append(hog(
-                image, 
-                orientations=orientations, 
+                image,
+                orientations=self.hist_orientations,
                 pixels_per_cell=(x,y),
-                cells_per_block=(1,1), 
-                multichannel=False)
+                cells_per_block=(1,1),
+                multichannel=False,
+                block_norm = 'None')
             )
-            
+
         return np.concatenate(feature_vector)
-    
+
+
+    @time_logger
+    def create_feature_vector_mp(self, differences):
+
+        diffs = np.concatenate(differences)
+
+        #os.system("taskset -p 0xff %d" % os.getpid())
+        pool = mp.Pool(processes=4)
+        features = [pool.apply_async(Pipeline.create_hogs_pyramid,
+                                     args=(self, diff))
+                    for diff in diffs]
+        feature_vector = [p.get() for p in features]
+        return np.concatenate(feature_vector)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
+
     @time_logger
     def create_feature_vector(differences, depth):
-        diffs = np.concatenate(differences) 
-        
+        diffs = np.concatenate(differences)
+
         return np.concatenate(list(map(
             lambda a: pipeline.create_hogs_pyramid(a, depth),
             diffs)
             ))
-    
-    
-    
-    @time_logger
-    def create_feature_vector_mp(self, differences):
-        
-        diffs = np.concatenate(differences) 
-        
-        #os.system("taskset -p 0xff %d" % os.getpid())
-        pool = mp.Pool(processes=4)
-        features = [pool.apply_async(pipeline.create_hogs_pyramid,
-                                     args=(diff, self.phog_depth, self.hist_orientations)) 
-                    for diff in diffs]
-        feature_vector = [p.get() for p in features]
-        return np.concatenate(feature_vector)
-    
-    
-        
-    
+
+
+'''
+
