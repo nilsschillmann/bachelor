@@ -46,6 +46,10 @@ def testplot(vector):
     fig, ax = plt.subplots(figsize=(7, 4), dpi=200)
 
     ax.scatter(x, y, marker='.', s=0.5, c=colors)
+    
+    ax.set_ylim(0)
+    ax.set_xlim(0, vector.size)
+    
 
 def plot_vector(vector, name, parameter, time=None):
 
@@ -69,7 +73,7 @@ def plot_vector(vector, name, parameter, time=None):
 
 
     ax.plot(vector, '.', markersize=0.5)
-    ax.set_ylim(0, 1)
+    ax.set_ylim(0)
     ax.set_xlim(0, vector.size)
     ax.set_title(title)
 

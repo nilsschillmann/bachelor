@@ -15,6 +15,8 @@ import logging
 
 import time
 
+import pickle
+
 #import testimages
 
 #%%
@@ -23,13 +25,14 @@ if __name__ == '__main__':
 
     #%% load image
     folder    = "../JenAesthetics/small/"
-    file_name = "Giovanni_Francesco_Romanelli_-_The_Finding_of_Moses_-_Google_Art_Project.jpg"
+    # file_name = "Giovanni_Francesco_Romanelli_-_The_Finding_of_Moses_-_Google_Art_Project.jpg"
+    file_name = "Albrecht_Dürer_-_Feast_of_Rose_Garlands_-_Google_Art_Project.jpg"
 
 
 
     #%% load test image
-    folder    = "../testpics/"
-    file_name = "harterverlauf.png"
+    # folder    = "../testpics/"
+    # file_name = "harterverlauf.png"
     # file_name = "Giovanni_Moses_test.jpg"
 
 
@@ -45,38 +48,74 @@ if __name__ == '__main__':
 
     #%% execute pipeline
 
-    parameter = {
-        'gauß_depth'        :6,
-        'hist_orientations' :8,
-        'phog_depth'        :3,
-        'resize_factor'     :1
-        }
+    # parameter = {
+    #     'gauß_depth'        :6,
+    #     'hist_orientations' :8,
+    #     'phog_depth'        :3,
+    #     'resize_factor'     :0.1
+    #     }
 
 
-    logging.info("\n\n")
-    logging.info("#################")
-    logging.info(parameter)
+    # logging.info("\n\n")
+    # logging.info("#################")
+    # logging.info(parameter)
 
-    pipe = Pipeline(**parameter)
+    # pipe = Pipeline(**parameter)
 
-    start_time = time.time()
+    # start_time = time.time()
 
-    lab, scalespaces, differences, fv = pipe.run(img)
+    # lab, scalespaces, differences, fv = pipe.run(img)
 
-    executiontime = time.time() - start_time
+    # executiontime = time.time() - start_time
 
-    logging.info(f'feature vecotr size: {fv.shape[0]}')
+    # logging.info(f'feature vecotr size: {fv.shape[0]}')
 
 
-    #%% plot
-    import plot
-    plot.plot_img(img)
-    plot.plot_lab(lab)
-    plot.plot_scalespaces(scalespaces, normalize=False)
-    plot.plot_scalespaces(differences, normalize=True)
-    plot.plot_vector(fv, name=file_name, parameter=parameter)
-    plot.plot_channel_histogramms(fv, differences, parameter)
-    plot.testplot(fv)
+
+#%% save featurevektor
+
+    for rf in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, False]:
+        
+
+        
+        parameter = {
+            'gauß_depth'        :6,
+            'hist_orientations' :8,
+            'phog_depth'        :3,
+            'resize_factor'     :rf
+            }
+        
+        logging.info("\n\n")
+        logging.info("#################")
+        logging.info(parameter)
+        
+        pipe = Pipeline(**parameter)
+        
+        start_time = time.time()
+        lab, scalespaces, differences, fv = pipe.run(img)
+        executiontime = time.time() - start_time
+
+        logging.info(f'feature vecotr size: {fv.shape[0]}')
+        
+        with open(''.join([file_name, str(rf), '.pkl']), 'wb') as output:
+            saving_vector = (parameter, fv)
+            pickle.dump(saving_vector, output, pickle.HIGHEST_PROTOCOL)
+        
+    
+
+#%% load featurevector
+
+
+
+    # #%% plot
+    # import plot
+    # plot.plot_img(img)
+    # plot.plot_lab(lab)
+    # plot.plot_scalespaces(scalespaces, normalize=False)
+    # plot.plot_scalespaces(differences, normalize=True)
+    # plot.plot_vector(fv, name=file_name, parameter=parameter)
+    # plot.plot_channel_histogramms(fv, differences, parameter)
+    # plot.testplot(fv)
 
     #%% plot
 
