@@ -54,6 +54,12 @@ class Pipeline():
             f'{self.resize_factor})'
 
 
+    def get_parameter(self):
+        return {'hist_orientations': self.hist_orientations,
+                'gauß_depth': self.gauß_depth,
+                'phog_depth': self.phog_depth,
+                'resize_factor': self.resize_factor}
+
     def time_logger(function):
         '''Decorate the given function to logg the execution time.'''
 

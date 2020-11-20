@@ -30,53 +30,87 @@ yellowblue = LinearSegmentedColormap.from_list('b', ['blue','white', 'yellow'])
 orientation_cmap = matplotlib.cm.get_cmap('hsv')
 
 
-
 def testplot(vector):
-
-
 
     x = [i for i in range(vector.size)]
     y = vector
 
-
     colors = [orientation_cmap(i) for i in np.arange(0, 1, 1/8)] * (vector.size // 8)
 
-
-
     fig, ax = plt.subplots(figsize=(7, 4), dpi=200)
 
-    ax.scatter(x, y, marker='.', s=0.5, c=colors)
-    
+    ax.scatter(x, y, marker='.', s=0.5, c='black')
+
     ax.set_ylim(0)
     ax.set_xlim(0, vector.size)
-    
-
-def plot_vector(vector, name, parameter, time=None):
-
-    title = name
-    title = title.replace('Google_Art_Project.jpg', '')
-    title = title.replace('_-_', ' ')
-    title = title.replace('_', ' ')
 
 
-    parameter_text = ''
-    for key, value in parameter.items():
-        parameter_text += str(key).replace('_', ' ') + ' = ' + str(value) + '\n'
+def orientations(vector, parameter, channel=None):
+    orientations = parameter['hist_orientations']
+    fig, axs = plt.subplots(orientations, 1, figsize=(10, 15), dpi=200)
+
+
+    for idx, ax in enumerate(axs):
+        orientation = vector[idx::orientations]
+        ax.plot(orientation, '.', markersize=1)
+
+        if channel == 'L':
+            ax.set_xlim(0, orientation.size // 3)
+        elif channel == 'a':
+            ax.set_xlim(orientation.size // 3, 2*(orientation.size // 3))
+        elif channel == 'b':
+            ax.set_xlim( 2*(orientation.size // 3), orientation.size)
+        else:
+            ax.set_xlim(0, orientation.size)
+
+
+
+def vector(vector, name=None, parameter=None, time=None, channel=None, colors=False):
 
     fig, ax = plt.subplots(figsize=(7, 4), dpi=200)
-    fig.text(0.15, 0.65, parameter_text, ha='left')
+
+
+    if parameter and colors:
+        orientations = parameter['hist_orientations']
+        color = [orientation_cmap(i) for i in
+                  np.arange(0, 1, 1/orientations)] * (vector.size // orientations)
+    else:
+        color = 'blue'
+
+    if parameter:
+        parameter_text = ''
+        for key, value in parameter.items():
+            parameter_text += str(key).replace('_', ' ') + ' = ' + str(value) + '\n'
+
+        fig.text(0.15, 0.65, parameter_text, ha='left')
 
     if time:
         microseconds = timedelta(seconds=time).microseconds
         time_text = timedelta(seconds=time) - timedelta(microseconds=microseconds)
         fig.text(0.85, 0.8, time_text, ha='right')
 
-
-    ax.plot(vector, '.', markersize=0.5)
+    #ax.plot(vector, '.', markersize=0.5)
+    x = [i for i in range(vector.size)]
+    y = vector
+    ax.scatter(x, y, marker='.', s=0.5, c=color)
     ax.set_ylim(0)
-    ax.set_xlim(0, vector.size)
-    ax.set_title(title)
 
+    if channel == 'L':
+        ax.set_xlim(0, vector.size // 3)
+    elif channel == 'a':
+        ax.set_xlim(vector.size // 3, 2*(vector.size // 3))
+    elif channel == 'b':
+        ax.set_xlim( 2*(vector.size // 3), vector.size)
+    else:
+        ax.set_xlim(0, vector.size)
+
+
+    if name:
+        title = name
+        title = title.replace('Google_Art_Project.jpg', '')
+        title = title.replace('_-_', ' ')
+        title = title.replace('_', ' ')
+        ax.set_title(title)
 
     ax.xaxis.set_major_locator(MultipleLocator(vector.size/3))
     ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
@@ -86,20 +120,19 @@ def plot_vector(vector, name, parameter, time=None):
         ))
 
     plt.grid(b=True, which='major', axis='x', color='#666666', linestyle='-')
-
     plt.grid(b=True, which='minor', axis='x', color='#999999', linestyle='-', alpha=0.2)
 
     plt.show()
 
 
-def plot_img(img):
+def img(img):
 
     fig, ax = plt.subplots(dpi = 200)
     ax.imshow(img)
     ax.axis('off')
 
 
-def plot_lab(lab):
+def lab(lab):
 
 
 
@@ -117,7 +150,7 @@ def plot_lab(lab):
     ax3.set_title("b channel")
     ax3.axis('off')
 
-def plot_scalespace(scalespace, labels=None):
+def scalespace(scalespace, labels=None):
 
     fig, axs = plt.subplots(1, len(scalespace), figsize=(10, 7), dpi=200)
 
@@ -130,7 +163,7 @@ def plot_scalespace(scalespace, labels=None):
         ax.axis('off')
 
 
-def plot_scalespaces(scalespaces, labels=None, normalize=False):
+def scalespaces(scalespaces, labels=None, normalize=False):
 
     ss = [im for scalespace in scalespaces for im in scalespace]
 
@@ -159,7 +192,7 @@ def plot_scalespaces(scalespaces, labels=None, normalize=False):
             ax.axis('off')
 
 
-def plot_channel_histogramms(feature_vector, diffs, parameter, channel=[0, 1, 2]):
+def channel_histogramms(feature_vector, diffs, parameter, channel=[0, 1, 2]):
 
     fig, axs = plt.subplots(
         nrows=parameter['gauß_depth']-1,
