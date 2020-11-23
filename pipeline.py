@@ -16,17 +16,12 @@ from ownhog import hog
 
 import numpy as np
 
-import os
-
 import time
 from datetime import timedelta
 
 import multiprocessing as mp
 
 
-#os.system("taskset -p 0xff %d" % os.getpid())
-
-logging.basicConfig(level=logging.INFO)
 
 
 
@@ -216,34 +211,4 @@ class Pipeline():
         feature_vector = [p.get() for p in features]
         return np.concatenate(feature_vector)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-'''
-
-    @time_logger
-    def create_feature_vector(differences, depth):
-        diffs = np.concatenate(differences)
-
-        return np.concatenate(list(map(
-            lambda a: pipeline.create_hogs_pyramid(a, depth),
-            diffs)
-            ))
-
-
-'''
 
