@@ -9,12 +9,8 @@ from skimage import io
 
 from pipeline import Pipeline
 
-#from plot import plot_vector
-
 import logging
-
 import time
-
 import pickle
 
 logging.basicConfig(level=logging.INFO)
@@ -23,8 +19,8 @@ logging.basicConfig(level=logging.INFO)
 #%%
 
 if __name__ == '__main__':
-    
-    
+
+
 
     #%% load image
     folder    = "../JenAesthetics/small/"
