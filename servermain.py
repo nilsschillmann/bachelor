@@ -10,26 +10,46 @@ import pickle
 
 import sys
 
-logging.basicConfig(level=logging.INFO)
+from datetime import date
+
+
 
 
 def main(argv):
+    
+    
+    #### LOGING CONFIG ####
+    
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+    handler = logging.FileHandler(filename='../logs/test.log', 
+                                  encoding='utf-8',
+                                  )
+    handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s')) # or whatever
+    root_logger.addHandler(handler)
 
-    input_folder = argv[0]
-    output_folder = argv[1]
+    
+    logging.info(f"\n\n")
+    logging.info(f" ############################# ")
+    logging.info(f" #########   NEW RUN  ######## ")
+    logging.info(f" ############################# ")
+    logging.info(f"")
+    
+    
+    
+    
+    
+    # input_folder = "../JenAesthetics/test"
+    # output_folder = "../features"
 
-    print('input folder:', input_folder)
-    print('output_folder:', output_folder)
-    input()
-
-
-
-
-
+    # logging.info('input folder: {input_folder}')
+    # logging.info('output folder: {output_folder}')
+    
+    
 
     pipe = Pipeline()
-
-
+    
+    
 
 if __name__ == '__main__':
     main(sys.argv[1:])
