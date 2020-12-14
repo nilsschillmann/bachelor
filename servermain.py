@@ -6,6 +6,7 @@ import logging
 import pickle
 import glob
 import sys
+from os import listdir
 from configparser import ConfigParser
 
 from skimage import io
@@ -23,15 +24,14 @@ def main():
     configure_logging(output_folder)
 
     picture_paths = glob.glob(input_folder + "/*")
-    file_sizes = []
-    for file in picture_paths:
-        img = Image.open(file)
-        file_sizes.append(img.size[0] * img.size[1])
+    file_sizes = {}
+    for file in listdir(input_folder):
+        img = Image.open("/".join((input_folder, file)))
+        file_sizes[file] = img.size[0] * img.size[1]
 
-    print(file_sizes)
-    print()
-    print(max(file_sizes))
-    print(min(file_sizes))
+    min_size = min(file_sizes.values())
+    for key, value in file_sizes.items():
+        print(key, min_size/value)
 
 
 def configure_logging(folder):
