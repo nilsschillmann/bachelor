@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+'''Starting point for the project running on the server'''
+
+
 import logging
 import time
 import pickle
@@ -13,6 +16,7 @@ from pipeline import Pipeline
 
 
 class Main:
+    '''Main class for the server'''
 
     def __init__(self, config):
         self.input_folder, \
@@ -21,6 +25,7 @@ class Main:
         self.configure_logging(self.output_folder)
 
     def main(self):
+        '''Run the pipeline for all images in a folder'''
 
         picture_paths = glob.glob(self.input_folder + "/*")
 
