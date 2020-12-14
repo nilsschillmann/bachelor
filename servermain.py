@@ -8,8 +8,10 @@ import glob
 import sys
 from os import listdir
 from configparser import ConfigParser
+from math import sqrt
 
 from skimage import io
+from skimage.transform import resize, rescale
 from PIL import Image
 
 from pipeline import Pipeline
@@ -31,18 +33,24 @@ def main():
         file_sizes[file] = img.size[0] * img.size[1]
 
     min_size = min(file_sizes.values())
-    for key, value in file_sizes.items():
-        print(key, (min_size/value) * resize_factor)
-        
-        
-    #img = resize_image(img)
-    #logging.info(f'Picture resized shape: {img.shape}')
+    # for key, value in file_sizes.items():
+    #     file_sizes[key] = (min_size/value) * resize_factor
+
+    for img_name, size in file_sizes.items():
+        print(size)
+        img = io.imread("/".join((input_folder, img_name)))
+        img = resize_image(img, min_size*resize_factor)
+        print(img.shape, img.shape[0]*img.shape[1])
 
 
-def resize_image(self, img):
-    '''Return a resolution scaled version of an image.'''
-    x, y = (round(a*self.resize_factor) for a in img.shape[:2])
-    return resize(img, (x, y))
+def resize_image(img, area):
+    '''Resize an image to a specific area'''
+    x, y = img.shape[:2]
+    x2 = round(sqrt(area / (x/y)))
+    y2 = round(sqrt(area / (y/x)))
+    return resize(img, (x2, y2))
+
+
 
 
 def configure_logging(folder):
