@@ -1,19 +1,15 @@
 # -*- coding: utf-8 -*-
-
-from pipeline import Pipeline
-
-from skimage import io
-
 import logging
 import time
 import pickle
 import glob
-
 import sys
-
 from configparser import ConfigParser
 
+from skimage import io
 from PIL import Image
+
+from pipeline import Pipeline
 
 
 class Main:

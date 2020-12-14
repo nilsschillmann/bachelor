@@ -3,26 +3,19 @@
 @author: Nils
 """
 import logging
-
+import time
+import multiprocessing as mp
+from math import sqrt
 from functools import wraps
 from functools import lru_cache
+from datetime import timedelta
 
-from math import sqrt
+import numpy as np
 from skimage.transform import resize
 from skimage import color
 from skimage.filters import gaussian
-# from skimage.feature import hog
+
 from ownhog import hog
-
-import numpy as np
-
-import time
-from datetime import timedelta
-
-import multiprocessing as mp
-
-
-
 
 
 class Pipeline():

@@ -4,25 +4,16 @@ Created on Sun Oct 25 20:29:16 2020
 
 @author: Nils
 """
-
-#import matplotlib as mpl
+from itertools import accumulate
+from datetime import timedelta
 
 import matplotlib
-
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
-
-
-
 from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
                                AutoMinorLocator, FixedLocator)
 
-from itertools import accumulate
 import numpy as np
-
-
-from datetime import timedelta
-#import time as tm
 
 
 redgreen   = LinearSegmentedColormap.from_list('a', ['green', 'white','red'])

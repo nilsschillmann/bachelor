@@ -4,14 +4,14 @@ Created on Wed Oct 14 00:44:51 2020
 
 @author: Nils
 """
+import logging
+import time
+import pickle
 
 from skimage import io
 
 from pipeline import Pipeline
 
-import logging
-import time
-import pickle
 
 logging.basicConfig(level=logging.INFO)
 
