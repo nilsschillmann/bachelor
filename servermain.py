@@ -19,7 +19,8 @@ def main():
     '''Run the pipeline for all images in a folder'''
     input_folder, \
         output_folder, \
-        parameter = parse_config(sys.argv[1])
+        parameter, \
+        resize_factor = parse_config(sys.argv[1])
 
     configure_logging(output_folder)
 
@@ -31,7 +32,17 @@ def main():
 
     min_size = min(file_sizes.values())
     for key, value in file_sizes.items():
-        print(key, min_size/value)
+        print(key, (min_size/value) * resize_factor)
+        
+        
+    #img = resize_image(img)
+    #logging.info(f'Picture resized shape: {img.shape}')
+
+
+def resize_image(self, img):
+    '''Return a resolution scaled version of an image.'''
+    x, y = (round(a*self.resize_factor) for a in img.shape[:2])
+    return resize(img, (x, y))
 
 
 def configure_logging(folder):
@@ -58,10 +69,10 @@ def parse_config(config_path):
         'hist_orientations': config.getint(
             'Parameter', 'hist_orientations'),
         'phog_depth': config.getint('Parameter', 'phog_depth'),
-        'resize_factor': config.getfloat('Parameter', 'resize_factor'),
         }
+    resize_factor = config.getfloat('Options', 'resize_factor')
 
-    return input_folder, output_folder, parameter
+    return input_folder, output_folder, parameter, resize_factor
 
 
 if __name__ == '__main__':

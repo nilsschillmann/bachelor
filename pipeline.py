@@ -24,13 +24,11 @@ class Pipeline():
                  hist_orientations  = 8,
                  gauß_depth         = 5,
                  phog_depth         = 3,
-                 resize_factor      = False
                  ):
 
         self.hist_orientations  = hist_orientations
         self.gauß_depth         = gauß_depth
         self.phog_depth         = phog_depth
-        self.resize_factor      = resize_factor
 
 
 
@@ -38,15 +36,13 @@ class Pipeline():
         return f'{self.__class__.__name__}(' \
             f'{self.hist_orientations}, ' \
             f'{self.gauß_depth}, ' \
-            f'{self.phog_depth}, ' \
-            f'{self.resize_factor})'
+            f'{self.phog_depth}, )'
 
 
     def get_parameter(self):
         return {'hist_orientations': self.hist_orientations,
                 'gauß_depth': self.gauß_depth,
-                'phog_depth': self.phog_depth,
-                'resize_factor': self.resize_factor}
+                'phog_depth': self.phog_depth}
 
     def time_logger(function):
         '''Decorate the given function to logg the execution time.'''
@@ -67,12 +63,6 @@ class Pipeline():
     def run(self, img, plot=False):
         '''Run the complete pipeline over a given Image.'''
 
-        logging.info(f'Picture shape: {img.shape}')
-
-        if self.resize_factor and self.resize_factor != 1:
-            img = self.resize_image(img)
-            logging.info(f'Picture resized shape: {img.shape}')
-
         sigmas, working_sigmas = self.calculate_sigmas(max(img.shape)/2, self.gauß_depth)
 
 
@@ -82,13 +72,6 @@ class Pipeline():
         feature_vector = self.create_feature_vector_mp(differences)
 
         return lab, scalespaces, differences, feature_vector
-
-
-    @time_logger
-    def resize_image(self, img):
-        '''Return a resolution scaled version of an image.'''
-        x, y = (round(a*self.resize_factor) for a in img.shape[:2])
-        return resize(img, (x, y))
 
 
     @time_logger
