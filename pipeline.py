@@ -11,7 +11,6 @@ from functools import lru_cache
 from datetime import timedelta
 
 import numpy as np
-from skimage.transform import resize
 from skimage import color
 from skimage.filters import gaussian
 
