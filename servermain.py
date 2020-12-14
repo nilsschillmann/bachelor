@@ -19,7 +19,7 @@ class Main:
         self.output_folder = output_folder
         self.parameter = parameter
 
-    def main(argv):
+    def main(self, argv):
         input_folder = "../JenAesthetics/test"
         output_folder = "../features"
 
@@ -50,7 +50,7 @@ def configure_logging(folder):
     logging.info('logger set up')
 
 
-def load_config(file_path):
+def parse_config(file_path):
     '''load a specifig configuration from ini file'''
     config = ConfigParser()
     config.read(file_path)
@@ -67,6 +67,6 @@ def load_config(file_path):
 
 
 if __name__ == '__main__':
-    input_folder, output_folder, parameter = load_config(sys.argv[1:])
+    input_folder, output_folder, parameter = parse_config(sys.argv[1:])
     configure_logging(output_folder)
     main = Main(input_folder, output_folder, parameter)
