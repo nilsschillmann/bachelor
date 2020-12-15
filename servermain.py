@@ -27,17 +27,15 @@ def main():
 
     configure_logging(output_folder)
 
-    picture_paths = glob.glob(input_folder + "/*")
-    file_sizes = {}
-    for file in listdir(input_folder):
-        img = Image.open("/".join((input_folder, file)))
-        file_sizes[file] = img.size[0] * img.size[1]
+    file_names = listdir(input_folder)
+    areas = []
+    for name in file_names:
+        img = Image.open("/".join((input_folder, name)))
+        areas.append(img.size[0] * img.size[1])
+    min_size = min(areas)
 
-    min_size = min(file_sizes.values())
-
-    for img_name, size in file_sizes.items():
-        print(size)
-        img = io.imread("/".join((input_folder, img_name)))
+    for name in file_names:
+        img = io.imread("/".join((input_folder, name)))
         img = resize_image(img, min_size*resize_factor)
         print(img.shape, img.shape[0]*img.shape[1])
 
