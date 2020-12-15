@@ -33,8 +33,6 @@ def main():
         file_sizes[file] = img.size[0] * img.size[1]
 
     min_size = min(file_sizes.values())
-    # for key, value in file_sizes.items():
-    #     file_sizes[key] = (min_size/value) * resize_factor
 
     for img_name, size in file_sizes.items():
         print(size)
