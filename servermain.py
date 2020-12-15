@@ -48,6 +48,29 @@ def resize_image(img, area):
     return resize(img, (x2, y2))
 
 
+def calculate_sigmas(max_sigma, n):
+    '''Calculate sigmas for gausian filters.'''
+
+    std_max = 100
+    x = std_max**(1/(n-1))
+    factors = tuple((x**i / std_max) for i in range(1, n))
+
+    sigmas = tuple(max_sigma*i for i in factors)
+
+    def s2(s1, s3): return sqrt(s3**2 - s1**2)
+    working_sigmas = [sigmas[0]]  # sigmas i have to add up
+    for s in sigmas[1:]:
+        last = working_sigmas[-1]
+        working_sigmas.append(s2(last, s))
+
+    sig_string = ', '.join(f'{sigma:.2f}' for sigma in sigmas)
+    ws_string = ', '.join(f'{sigma:.2f}' for sigma in working_sigmas)
+    logging.info(f"sigmas = " + sig_string)
+    logging.info("working_sigmas = " + ws_string)
+
+    return sigmas, working_sigmas
+
+
 def configure_logging(folder):
     '''configure the style and path for the logging file'''
     root_logger = logging.getLogger()
