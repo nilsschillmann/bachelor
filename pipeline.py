@@ -69,6 +69,7 @@ def create_scalespaces(imgs, sigmas):
     return output
 
 
+@time_logger
 def create_scalespace_chained(img, sigmas):
     '''Return a gausian scalespace for an given image.'''
 
@@ -106,13 +107,13 @@ def create_differences(scalespaces):
     return differences
 
 
-def create_hogs_pyramid(image):
+def create_hogs_pyramid(image, depth, orientations):
     feature_vector = []
-    for i in [2**a for a in range(self.phog_depth)]:
+    for i in [2**a for a in range(depth)]:
         x, y = map(lambda a: a//i, image.shape[:2])
         feature_vector.append(hog(
             image,
-            orientations=self.hist_orientations,
+            orientations=orientations,
             pixels_per_cell=(x, y),
             cells_per_block=(1, 1),
             multichannel=False,
@@ -122,14 +123,14 @@ def create_hogs_pyramid(image):
 
 
 @time_logger
-def create_feature_vector_mp(differences):
+def create_feature_vector_mp(differences, depth, orientations):
 
     diffs = np.concatenate(differences)
 
     # os.system("taskset -p 0xff %d" % os.getpid())
     pool = mp.Pool(processes=4)
-    features = [pool.apply_async(Pipeline.create_hogs_pyramid,
-                                 args=(self, diff))
+    features = [pool.apply_async(create_hogs_pyramid,
+                                 args=(diff, depth, orientations))
                 for diff in diffs]
     feature_vector = [p.get() for p in features]
     return np.concatenate(feature_vector)
