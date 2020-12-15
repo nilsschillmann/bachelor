@@ -69,8 +69,14 @@ def create_scalespaces(imgs, sigmas):
     return output
 
 
-def create_scalespace_chained(img, working_sigmas):
+def create_scalespace_chained(img, sigmas):
     '''Return a gausian scalespace for an given image.'''
+
+    def s2(s1, s3): return sqrt(s3**2 - s1**2)
+    working_sigmas = [sigmas[0]]  # sigmas i have to add up
+    for s in sigmas[1:]:
+        last = working_sigmas[-1]
+        working_sigmas.append(s2(last, s))
 
     scalespace = [img]
     img_filtered = img
