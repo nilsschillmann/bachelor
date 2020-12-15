@@ -9,6 +9,7 @@ import sys
 from os import listdir
 from configparser import ConfigParser
 from math import sqrt
+from datetime import date
 
 from skimage import io
 from skimage.transform import resize, rescale
@@ -49,8 +50,6 @@ def resize_image(img, area):
     return resize(img, (x2, y2))
 
 
-
-
 def configure_logging(folder):
     '''configure the style and path for the logging file'''
     root_logger = logging.getLogger()
@@ -59,9 +58,10 @@ def configure_logging(folder):
                                   encoding='utf-8',
                                   )
     handler.setFormatter(logging.Formatter(
-        '%(asctime)s %(levelname)s %(message)s'))
+        '%(asctime)s %(levelname)s %(message)s', "%H:%M:%S"))
     root_logger.addHandler(handler)
-    logging.info('logger set up')
+    today = date.today()
+    logging.info(f'logger set up on {today}')
 
 
 def parse_config(config_path):
