@@ -15,15 +15,15 @@ from skimage import io
 from skimage.transform import resize, rescale
 from PIL import Image
 
-from pipeline import Pipeline
-
+import pipeline
 
 def main():
     '''Run the pipeline for all images in a folder'''
     input_folder, \
         output_folder, \
         parameter, \
-        resize_factor = parse_config(sys.argv[1])
+        resize_factor, \
+        processes = parse_config(sys.argv[1])
 
     configure_logging(output_folder)
 
@@ -39,6 +39,8 @@ def main():
         img = resize_image(img, min_size*resize_factor)
         print(img.shape, img.shape[0]*img.shape[1])
 
+    # sigmas, working_sigmas = self.calculate_sigmas(
+    #     max(img.shape)/2, self.gauß_depth)
 
 def resize_image(img, area):
     '''Resize an image to a specific area'''
@@ -87,8 +89,9 @@ def parse_config(config_path):
         'phog_depth': config.getint('Parameter', 'phog_depth'),
         }
     resize_factor = config.getfloat('Options', 'resize_factor')
+    processes = config.getint('Options', 'processes')
 
-    return input_folder, output_folder, parameter, resize_factor
+    return input_folder, output_folder, parameter, resize_factor, processes
 
 
 if __name__ == '__main__':

@@ -16,6 +16,11 @@ from skimage.filters import gaussian
 
 from ownhog import hog
 
+PROCESSES = 4
+
+def change_processes_count(processes):
+    global PROCESSES
+    PROCESSES = processes
 
 def time_logger(function):
     '''Decorate the given function to logg the execution time.'''
@@ -33,16 +38,13 @@ def time_logger(function):
 
 
 @time_logger
-def run(img, sigmas,  plot=False):
+def run(img, sigmas):
     '''Run the complete pipeline over a given Image.'''
 
-    sigmas, working_sigmas = self.calculate_sigmas(
-        max(img.shape)/2, self.gauß_depth)
-
-    lab = self.convert2lab(img)
-    scalespaces = self.create_scalespaces(lab, sigmas)
-    differences = self.create_differences(scalespaces)
-    feature_vector = self.create_feature_vector_mp(differences)
+    lab = convert2lab(img)
+    scalespaces = create_scalespaces(lab, sigmas)
+    differences = create_differences(scalespaces)
+    feature_vector = create_feature_vector_mp(differences)
 
     return lab, scalespaces, differences, feature_vector
 
@@ -62,8 +64,8 @@ def create_scalespaces(imgs, sigmas):
     '''Return a list of gausian scalespaces for a list of images.'''
     # os.system("taskset -p 0xff %d" % os.getpid())
 
-    pool = mp.Pool(processes=4)
-    scalespaces = [pool.apply_async(self.create_scalespace,
+    pool = mp.Pool(processes=PROCESSES)
+    scalespaces = [pool.apply_async(create_scalespace,
                                     args=(img, sigmas)) for img in imgs]
     output = [p.get() for p in scalespaces]
     return output
@@ -128,7 +130,7 @@ def create_feature_vector_mp(differences, depth, orientations):
     diffs = np.concatenate(differences)
 
     # os.system("taskset -p 0xff %d" % os.getpid())
-    pool = mp.Pool(processes=4)
+    pool = mp.Pool(processes=PROCESSES)
     features = [pool.apply_async(create_hogs_pyramid,
                                  args=(diff, depth, orientations))
                 for diff in diffs]
