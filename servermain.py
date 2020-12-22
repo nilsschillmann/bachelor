@@ -39,6 +39,8 @@ def main():
         img = resize_image(img, min_size*resize_factor)
         print(img.shape, img.shape[0]*img.shape[1])
 
+    # sigmas, working_sigmas = self.calculate_sigmas(
+    #     max(img.shape)/2, self.gauß_depth)
 
 def resize_image(img, area):
     '''Resize an image to a specific area'''
