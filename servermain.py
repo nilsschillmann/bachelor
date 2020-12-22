@@ -23,7 +23,8 @@ def main():
     input_folder, \
         output_folder, \
         parameter, \
-        resize_factor = parse_config(sys.argv[1])
+        resize_factor, \
+        processes = parse_config(sys.argv[1])
 
     configure_logging(output_folder)
 
@@ -89,8 +90,9 @@ def parse_config(config_path):
         'phog_depth': config.getint('Parameter', 'phog_depth'),
         }
     resize_factor = config.getfloat('Options', 'resize_factor')
+    processes = config.getint('Options', 'processes')
 
-    return input_folder, output_folder, parameter, resize_factor
+    return input_folder, output_folder, parameter, resize_factor, processes
 
 
 if __name__ == '__main__':

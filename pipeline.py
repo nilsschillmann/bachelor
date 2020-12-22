@@ -38,7 +38,7 @@ def time_logger(function):
 
 
 @time_logger
-def run(img, sigmas, processes=None):
+def run(img, sigmas):
     '''Run the complete pipeline over a given Image.'''
 
     lab = convert2lab(img)
