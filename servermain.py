@@ -48,6 +48,18 @@ def resize_image(img, area):
     return resize(img, (x2, y2))
 
 
+def calculate_sigmas(max_sigma, n):
+    '''Calculate sigmas for gausian filters.'''
+
+    std_max = 100
+    x = std_max**(1/(n-1))
+    factors = tuple((x**i / std_max) for i in range(1, n))
+
+    sigmas = tuple(max_sigma*i for i in factors)
+
+    return sigmas
+
+
 def configure_logging(folder):
     '''configure the style and path for the logging file'''
     root_logger = logging.getLogger()
