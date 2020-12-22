@@ -5,9 +5,7 @@
 import logging
 import time
 import multiprocessing as mp
-from math import sqrt
 from functools import wraps
-from functools import lru_cache
 from datetime import timedelta
 
 import numpy as np
@@ -18,9 +16,6 @@ from ownhog import hog
 
 PROCESSES = 4
 
-def change_processes_count(processes):
-    global PROCESSES
-    PROCESSES = processes
 
 def time_logger(function):
     '''Decorate the given function to logg the execution time.'''
@@ -38,13 +33,13 @@ def time_logger(function):
 
 
 @time_logger
-def run(img, sigmas):
+def run(img, sigmas, depth, orientations):
     '''Run the complete pipeline over a given Image.'''
 
     lab = convert2lab(img)
     scalespaces = create_scalespaces(lab, sigmas)
     differences = create_differences(scalespaces)
-    feature_vector = create_feature_vector_mp(differences)
+    feature_vector = create_feature_vector_mp(differences, depth, orientations)
 
     return lab, scalespaces, differences, feature_vector
 
@@ -71,35 +66,19 @@ def create_scalespaces(imgs, sigmas):
     return output
 
 
-@time_logger
-def create_scalespace_chained(img, sigmas):
-    '''Return a gausian scalespace for an given image.'''
-
-    def s2(s1, s3): return sqrt(s3**2 - s1**2)
-    working_sigmas = [sigmas[0]]  # sigmas i have to add up
-    for s in sigmas[1:]:
-        last = working_sigmas[-1]
-        working_sigmas.append(s2(last, s))
-
-    scalespace = [img]
-    img_filtered = img
-    for s in working_sigmas:
-        img_filtered = gaussian(img_filtered, s, multichannel=False)
-        scalespace.append(img_filtered)
-    return scalespace
-
-
 def create_scalespace(img, sigmas):
     '''Return a gausian scalespace for an given image.'''
 
     scalespace = [img]
-    for s in sigmas:
-        scalespace.append(gaussian(img, s, multichannel=False))
+    for sigma in sigmas:
+        scalespace.append(gaussian(img, sigma, multichannel=False))
     return scalespace
 
 
 @time_logger
 def create_differences(scalespaces):
+    '''Return the differences of images in a scalespace'''
+
     differences = []
     for scalespace in scalespaces:
         diffs = []
@@ -110,13 +89,15 @@ def create_differences(scalespaces):
 
 
 def create_hogs_pyramid(image, depth, orientations):
+    '''Return a vector of an histogram of oriented gradience pyramid'''
+
     feature_vector = []
     for i in [2**a for a in range(depth)]:
-        x, y = map(lambda a: a//i, image.shape[:2])
+        width, height = tuple(a//i for a in image.shape[:2])
         feature_vector.append(hog(
             image,
             orientations=orientations,
-            pixels_per_cell=(x, y),
+            pixels_per_cell=(width, height),
             cells_per_block=(1, 1),
             multichannel=False,
             block_norm='None'))
@@ -126,6 +107,7 @@ def create_hogs_pyramid(image, depth, orientations):
 
 @time_logger
 def create_feature_vector_mp(differences, depth, orientations):
+    '''Create the full feature vector over all differences images'''
 
     diffs = np.concatenate(differences)
 
