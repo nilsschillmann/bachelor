@@ -15,8 +15,7 @@ from skimage import io
 from skimage.transform import resize, rescale
 from PIL import Image
 
-from pipeline import Pipeline
-
+import pipeline
 
 def main():
     '''Run the pipeline for all images in a folder'''
