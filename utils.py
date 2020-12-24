@@ -5,7 +5,7 @@ import logging
 from math import sqrt
 from configparser import ConfigParser
 from datetime import date
-
+from collections import namedtuple
 from skimage.transform import resize
 
 
@@ -43,17 +43,27 @@ def configure_logging(folder):
 
 def parse_config(config_path):
     '''load a specifig configuration from ini file'''
-    config = ConfigParser()
-    config.read(config_path)
-    input_folder = config.get('Folders', 'input')
-    output_folder = config.get('Folders', 'output')
+    config_parser = ConfigParser()
+    config_parser.read(config_path)
+    input_folder = config_parser.get('Folders', 'input')
+    output_folder = config_parser.get('Folders', 'output')
     parameter = {
-        'gauß_depth': config.getint('Parameter', 'gauss_depth'),
-        'hist_orientations': config.getint(
+        'gauß_depth': config_parser.getint('Parameter', 'gauss_depth'),
+        'hist_orientations': config_parser.getint(
             'Parameter', 'hist_orientations'),
-        'phog_depth': config.getint('Parameter', 'phog_depth'),
+        'phog_depth': config_parser.getint('Parameter', 'phog_depth'),
         }
-    resize_factor = config.getfloat('Options', 'resize_factor')
-    processes = config.getint('Options', 'processes')
+    resize_factor = config_parser.getfloat('Options', 'resize_factor')
+    processes = config_parser.getint('Options', 'processes')
 
-    return input_folder, output_folder, parameter, resize_factor, processes
+    Configuration = namedtuple('Configuration', ['input_folder',
+                                                 'output_folder',
+                                                 'parameter',
+                                                 'resize_factor',
+                                                 'processes'])
+
+    return Configuration(input_folder,
+                         output_folder,
+                         parameter,
+                         resize_factor,
+                         processes)
