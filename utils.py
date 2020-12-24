@@ -6,23 +6,23 @@ from math import sqrt
 from configparser import ConfigParser
 from datetime import date
 
-from skimage.transform import resize, rescale
+from skimage.transform import resize
 
 
 def resize_image(img, area):
     '''Resize an image to a specific area'''
-    x, y = img.shape[:2]
-    x2 = round(sqrt(area / (x/y)))
-    y2 = round(sqrt(area / (y/x)))
-    return resize(img, (x2, y2))
+    width, height = img.shape[:2]
+    new_width = round(sqrt(area / (width/height)))
+    new_height = round(sqrt(area / (height/width)))
+    return resize(img, (new_width, new_height))
 
 
-def calculate_sigmas(max_sigma, n):
+def calculate_sigmas(max_sigma, number):
     '''Calculate sigmas for gausian filters.'''
 
     std_max = 100
-    x = std_max**(1/(n-1))
-    factors = tuple((x**i / std_max) for i in range(1, n))
+    base = std_max**(1/(number-1))
+    factors = tuple((base**i / std_max) for i in range(1, number))
     sigmas = tuple(max_sigma*i for i in factors)
     return sigmas
 
