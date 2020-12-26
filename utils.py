@@ -12,8 +12,8 @@ from skimage.transform import resize
 def resize_image(img, area):
     '''Resize an image to a specific area'''
     width, height = img.shape[:2]
-    new_width = round(sqrt(area / (width/height)))
-    new_height = round(sqrt(area / (height/width)))
+    new_width = round(sqrt(area / (height/width)))
+    new_height = round(sqrt(area / (width/height)))
     return resize(img, (new_width, new_height))
 
 
