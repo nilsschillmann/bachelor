@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 '''Starting point for the project running on the server'''
 
-
+import logging
 import pickle
 import glob
 import sys
@@ -31,7 +31,9 @@ def main():
         areas.append(img.size[0] * img.size[1])
     min_size = min(areas)
 
-    sigmas = utils.calculate_sigmas(sqrt(min_size)/2, parameter.gauß_depth)
+    sigmas = utils.calculate_sigmas(sqrt(min_size)//2, parameter.gauß_depth)
+
+    logging.info(f"sigmas: {sigmas}")
 
     for name in file_names:
         img = io.imread("/".join((config.input_folder, name)))
