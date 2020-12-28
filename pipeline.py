@@ -49,9 +49,8 @@ def convert2lab(img):
     '''Convert an rgb image to python list of Lab channels.'''
     converted = color.rgb2lab(img)
     # split the channels
-    channels = [converted[:, :, i] for i in
-                range(converted.shape[-1])]
-    return channels
+    return [converted[:, :, i] for i in range(
+        converted.shape[-1])]  # pylint: disable=E1136  # pylint/issues/3139
 
 
 @time_logger
