@@ -5,6 +5,7 @@
 import pickle
 import glob
 import sys
+from math import sqrt
 from os import listdir
 
 from skimage import io
@@ -17,23 +18,25 @@ import utils
 def main():
     '''Run the pipeline for all images in a folder'''
     config = utils.parse_config(sys.argv[1])
+    parameter = config.parameter
 
     utils.configure_logging(config.output_folder)
 
     file_names = listdir(config.input_folder)
+
+    # checkout the smalest picture by area
     areas = []
     for name in file_names:
         img = Image.open("/".join((config.input_folder, name)))
         areas.append(img.size[0] * img.size[1])
     min_size = min(areas)
 
+    sigmas = utils.calculate_sigmas(sqrt(min_size)/2, parameter.gauß_depth)
+
     for name in file_names:
         img = io.imread("/".join((config.input_folder, name)))
         img = utils.resize_image(img, min_size*config.resize_factor)
         print(img.shape, img.shape[0]*img.shape[1])
-
-    # sigmas, working_sigmas = self.calculate_sigmas(
-    #     max(img.shape)/2, self.gauß_depth)
 
 
 if __name__ == '__main__':
