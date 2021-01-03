@@ -73,36 +73,36 @@ if __name__ == '__main__':
 
 #%% save featurevektor
 
-    # for rf in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+    for rf in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
 
 
 
-    #     parameter = {
-    #         'gauß_depth'        :6,
-    #         'hist_orientations' :8,
-    #         'phog_depth'        :3,
-    #         'resize_factor'     :rf
-    #         }
+        parameter = {
+            'gauß_depth'        :6,
+            'hist_orientations' :8,
+            'phog_depth'        :3,
+            'resize_factor'     :rf
+            }
 
-    #     logging.info("\n\n")
-    #     logging.info("#################")
-    #     logging.info(parameter)
+        logging.info("\n\n")
+        logging.info("#################")
+        logging.info(parameter)
 
-    #     pipe = Pipeline(**parameter)
+        pipe = Pipeline(**parameter)
 
-    #     start_time = time.time()
-    #     lab, scalespaces, differences, fv = pipe.run(img)
-    #     executiontime = time.time() - start_time
+        start_time = time.time()
+        lab, scalespaces, differences, fv = pipe.run(img)
+        executiontime = time.time() - start_time
 
-    #     logging.info(f'feature vecotr size: {fv.shape[0]}')
+        logging.info(f'feature vecotr size: {fv.shape[0]}')
 
-    #     with open(''.join([file_name, str(rf), '.pkl']), 'wb') as output:
-    #         saving_vector = (parameter, fv)
-    #         pickle.dump(saving_vector, output, pickle.HIGHEST_PROTOCOL)
+        with open(''.join([file_name, str(rf), '.pkl']), 'wb') as output:
+            saving_vector = (parameter, fv)
+            pickle.dump(saving_vector, output, pickle.HIGHEST_PROTOCOL)
 
-    #     with open(''.join([file_name, str(rf), "rest", '.pkl']), 'wb') as output:
-    #         rest = (lab, scalespaces, differences)
-    #         pickle.dump(saving_vector, output, pickle.HIGHEST_PROTOCOL)
+        with open(''.join([file_name, str(rf), "rest", '.pkl']), 'wb') as output:
+            rest = (lab, scalespaces, differences)
+            pickle.dump(saving_vector, output, pickle.HIGHEST_PROTOCOL)
 
 
 
