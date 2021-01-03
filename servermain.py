@@ -31,7 +31,7 @@ def main():
         areas.append(img.size[0] * img.size[1])
     min_size = min(areas)
 
-    sigmas = utils.calculate_sigmas(sqrt(min_size)//2, parameter.gauß_depth)
+    sigmas = utils.calculate_sigmas(sqrt(min_size)//2, parameter['gauß_depth'])
 
     logging.info(f"sigmas: {sigmas}")
 
@@ -39,6 +39,14 @@ def main():
         img = io.imread("/".join((config.input_folder, name)))
         img = utils.resize_image(img, min_size*config.resize_factor)
         print(img.shape, img.shape[0]*img.shape[1])
+        logging.info(name)
+        result = pipeline.run(img,
+                              sigmas,
+                              parameter['phog_depth'],
+                              parameter['hist_orientations'])
+        print(type(result))
+        with open(''.join([config.output_folder, "/", name, ".pkl"]), 'wb') as output:
+            pickle.dump((parameter, result), output, pickle.HIGHEST_PROTOCOL)
 
 
 if __name__ == '__main__':
