@@ -10,9 +10,12 @@ from datetime import timedelta
 
 import numpy as np
 from skimage import color
+from skimage import io
 from skimage.filters import gaussian
 
 from ownhog import hog
+
+import utils
 
 PROCESSES = 4
 
@@ -33,14 +36,19 @@ def time_logger(function):
 
 
 @time_logger
-def run(img, sigmas, depth, orientations):
+def run(path, sigmas, depth, orientations, area, just_vector=True):
     '''Run the complete pipeline over a given Image.'''
 
+
+    img = io.imread(path)
+    img = utils.resize_image(img, area)
     lab = convert2lab(img)
     scalespaces = create_scalespaces(lab, sigmas)
     differences = create_differences(scalespaces)
-    feature_vector = create_feature_vector_mp(differences, depth, orientations)
+    feature_vector = create_feature_vector(differences, depth, orientations)
 
+    if just_vector:
+        return feature_vector
     return lab, scalespaces, differences, feature_vector
 
 
@@ -54,23 +62,35 @@ def convert2lab(img):
 
 
 @time_logger
-def create_scalespaces(imgs, sigmas):
+def create_scalespaces_mp(imgs, sigmas):
     '''Return a list of gausian scalespaces for a list of images.'''
     # os.system("taskset -p 0xff %d" % os.getpid())
 
-    pool = mp.Pool(processes=PROCESSES)
+    pool = mp.Pool()
     scalespaces = [pool.apply_async(create_scalespace,
                                     args=(img, sigmas)) for img in imgs]
     output = [p.get() for p in scalespaces]
     return output
 
 
+@time_logger
+def create_scalespaces(imgs, sigmas):
+    '''Return a list of gausian scalespaces for a list of images.'''
+
+    output = []
+    for img in imgs:
+        print('image')
+        output.append(create_scalespace(img, sigmas))
+    return output
+
+
 def create_scalespace(img, sigmas):
     '''Return a gausian scalespace for an given image.'''
-
+    print('sigmas = ', sigmas)
     scalespace = [img]
     for sigma in sigmas:
         scalespace.append(gaussian(img, sigma, multichannel=False))
+    print('end create scalespace')
     return scalespace
 
 
@@ -116,4 +136,16 @@ def create_feature_vector_mp(differences, depth, orientations):
                                  args=(diff, depth, orientations))
                 for diff in diffs]
     feature_vector = [p.get() for p in features]
+    return np.concatenate(feature_vector)
+
+
+@time_logger
+def create_feature_vector(differences, depth, orientations):
+    '''Create the full feature vector over all differences images'''
+
+    diffs = np.concatenate(differences)
+
+    feature_vector = []
+    for diff in diffs:
+        feature_vector.append(create_hogs_pyramid(diff, depth, orientations))
     return np.concatenate(feature_vector)

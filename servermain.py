@@ -7,9 +7,11 @@ import glob
 import sys
 from math import sqrt
 from os import listdir
+import multiprocessing as mp
 
 from skimage import io
 from PIL import Image
+
 
 import pipeline
 import utils
@@ -24,30 +26,30 @@ def main():
 
     file_names = listdir(config.input_folder)
 
-    # checkout the smalest picture by area
-    areas = []
-    for name in file_names:
-        img = Image.open("/".join((config.input_folder, name)))
-        areas.append(img.size[0] * img.size[1])
-    min_size = min(areas)
+    area = parameter['area']
 
-    sigmas = utils.calculate_sigmas(sqrt(min_size)//2, parameter['gauß_depth'])
+    sigmas = utils.calculate_sigmas(sqrt(area)//2, parameter['gauß_depth'])
 
     logging.info(f"sigmas: {sigmas}")
 
     for name in file_names:
-        img = io.imread("/".join((config.input_folder, name)))
-        img = utils.resize_image(img, min_size*config.resize_factor)
-        print(img.shape, img.shape[0]*img.shape[1])
-        logging.info(name)
-        result = pipeline.run(img,
-                              sigmas,
-                              parameter['phog_depth'],
-                              parameter['hist_orientations'])
-        print(type(result))
-        with open(''.join([config.output_folder, "/", name, ".pkl"]), 'wb') as output:
-            pickle.dump((parameter, result), output, pickle.HIGHEST_PROTOCOL)
+        print(name)
+
+    pool = mp.Pool()
+
+    procs = {name: pool.apply_async(pipeline.run, args=(config.input_folder + name,
+                                                  sigmas,
+                                                  parameter['phog_depth'],
+                                                  parameter['hist_orientations'],
+                                                  area)) for name in file_names}
+
+    results = {name: p.get() for name, p in procs.items()}
+
+    with open(''.join([config.output_folder, "/", 'result', ".pkl"]), 'wb') as output:
+            pickle.dump((parameter, results), output, pickle.HIGHEST_PROTOCOL)
 
 
 if __name__ == '__main__':
+    print('start')
     main()
+    print('ende')

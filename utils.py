@@ -52,18 +52,14 @@ def parse_config(config_path):
         'hist_orientations': config_parser.getint(
             'Parameter', 'hist_orientations'),
         'phog_depth': config_parser.getint('Parameter', 'phog_depth'),
+        'area': config_parser.getint('Parameter', 'area'),
         }
-    resize_factor = config_parser.getfloat('Options', 'resize_factor')
-    processes = config_parser.getint('Options', 'processes')
 
     Configuration = namedtuple('Configuration', ['input_folder',
                                                  'output_folder',
-                                                 'parameter',
-                                                 'resize_factor',
-                                                 'processes'])
+                                                 'parameter'])
 
     return Configuration(input_folder,
                          output_folder,
                          parameter,
-                         resize_factor,
-                         processes)
+                         )
