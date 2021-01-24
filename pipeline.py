@@ -36,7 +36,7 @@ PROCESSES = 4
 
 
 # @time_logger
-def run(path, sigmas, depth, orientations, area, just_vector=True):
+def run(path, sigmas, depth, orientations, area):
     '''Run the complete pipeline over a given Image.'''
 
 
@@ -47,9 +47,7 @@ def run(path, sigmas, depth, orientations, area, just_vector=True):
     differences = create_differences(scalespaces)
     feature_vector = create_feature_vector(differences, depth, orientations)
 
-    if just_vector:
-        return feature_vector
-    return lab, scalespaces, differences, feature_vector
+    return feature_vector
 
 
 # @time_logger
