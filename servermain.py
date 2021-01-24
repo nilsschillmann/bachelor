@@ -14,9 +14,10 @@ from datetime import timedelta
 from skimage import io
 from PIL import Image
 
-
 import pipeline
 import utils
+
+Image.MAX_IMAGE_PIXELS = None
 
 
 def main():
