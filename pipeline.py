@@ -20,22 +20,22 @@ import utils
 PROCESSES = 4
 
 
-def time_logger(function):
-    '''Decorate the given function to logg the execution time.'''
+# def time_logger(function):
+#     '''Decorate the given function to logg the execution time.'''
 
-    @wraps(function)
-    def wrapper(*args, **kwargs):
-        logging.info(f'Execute {function.__name__} ...')
-        start_time = time.time()
-        result = function(*args, **kwargs)
-        executiontime = time.time() - start_time
-        delta = str(timedelta(seconds=executiontime))
-        logging.info(f'{function.__name__:<20} executed in {delta :>20}')
-        return result
-    return wrapper
+#     @wraps(function)
+#     def wrapper(*args, **kwargs):
+#         logging.info(f'Execute {function.__name__} ...')
+#         start_time = time.time()
+#         result = function(*args, **kwargs)
+#         executiontime = time.time() - start_time
+#         delta = str(timedelta(seconds=executiontime))
+#         logging.info(f'{function.__name__:<20} executed in {delta :>20}')
+#         return result
+#     return wrapper
 
 
-@time_logger
+# @time_logger
 def run(path, sigmas, depth, orientations, area, just_vector=True):
     '''Run the complete pipeline over a given Image.'''
 
@@ -52,7 +52,7 @@ def run(path, sigmas, depth, orientations, area, just_vector=True):
     return lab, scalespaces, differences, feature_vector
 
 
-@time_logger
+# @time_logger
 def convert2lab(img):
     '''Convert an rgb image to python list of Lab channels.'''
     converted = color.rgb2lab(img)
@@ -61,7 +61,7 @@ def convert2lab(img):
         converted.shape[-1])]  # pylint: disable=E1136  # pylint/issues/3139
 
 
-@time_logger
+# @time_logger
 def create_scalespaces_mp(imgs, sigmas):
     '''Return a list of gausian scalespaces for a list of images.'''
     # os.system("taskset -p 0xff %d" % os.getpid())
@@ -73,7 +73,7 @@ def create_scalespaces_mp(imgs, sigmas):
     return output
 
 
-@time_logger
+# @time_logger
 def create_scalespaces(imgs, sigmas):
     '''Return a list of gausian scalespaces for a list of images.'''
 
@@ -94,7 +94,7 @@ def create_scalespace(img, sigmas):
     return scalespace
 
 
-@time_logger
+# @time_logger
 def create_differences(scalespaces):
     '''Return the differences of images in a scalespace'''
 
@@ -124,7 +124,7 @@ def create_hogs_pyramid(image, depth, orientations):
     return np.concatenate(feature_vector)
 
 
-@time_logger
+# @time_logger
 def create_feature_vector_mp(differences, depth, orientations):
     '''Create the full feature vector over all differences images'''
 
@@ -139,7 +139,7 @@ def create_feature_vector_mp(differences, depth, orientations):
     return np.concatenate(feature_vector)
 
 
-@time_logger
+# @time_logger
 def create_feature_vector(differences, depth, orientations):
     '''Create the full feature vector over all differences images'''
 
