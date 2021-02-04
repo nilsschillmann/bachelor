@@ -11,13 +11,11 @@ from math import sqrt
 
 import numpy as np
 from skimage import color
-from skimage import io
 from skimage.filters import gaussian
 from skimage.transform import resize
 
 from ownhog import hog
 
-import utils
 
 PROCESSES = 4
 
@@ -38,11 +36,10 @@ PROCESSES = 4
 
 
 # @time_logger
-def run(path, sigmas, depth, orientations, area):
+def run(img, sigmas, depth, orientations, area):
     '''Run the complete pipeline over a given Image.'''
 
-    img = io.imread(path)
-    img = utils.resize_image(img, area)
+    img = resize_image(img, area)
     lab = convert2lab(img)
     scalespaces = create_scalespaces(lab, sigmas)
     differences = create_differences(scalespaces)
