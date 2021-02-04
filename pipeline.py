@@ -7,11 +7,13 @@ import time
 import multiprocessing as mp
 from functools import wraps
 from datetime import timedelta
+from math import sqrt
 
 import numpy as np
 from skimage import color
 from skimage import io
 from skimage.filters import gaussian
+from skimage.transform import resize
 
 from ownhog import hog
 
@@ -39,7 +41,6 @@ PROCESSES = 4
 def run(path, sigmas, depth, orientations, area):
     '''Run the complete pipeline over a given Image.'''
 
-
     img = io.imread(path)
     img = utils.resize_image(img, area)
     lab = convert2lab(img)
@@ -48,6 +49,14 @@ def run(path, sigmas, depth, orientations, area):
     feature_vector = create_feature_vector(differences, depth, orientations)
 
     return feature_vector
+
+
+def resize_image(img, area):
+    '''Resize an image to a specific area'''
+    width, height = img.shape[:2]
+    new_width = round(sqrt(area / (height/width)))
+    new_height = round(sqrt(area / (width/height)))
+    return resize(img, (new_width, new_height))
 
 
 # @time_logger

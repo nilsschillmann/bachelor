@@ -2,21 +2,11 @@
 '''Module that contains all the functionality that do not fit elsewhere.'''
 
 import logging
-from math import sqrt
 from configparser import ConfigParser
 from datetime import date
 from collections import namedtuple
-from skimage.transform import resize
 from skimage import io
 import pickle
-
-
-def resize_image(img, area):
-    '''Resize an image to a specific area'''
-    width, height = img.shape[:2]
-    new_width = round(sqrt(area / (height/width)))
-    new_height = round(sqrt(area / (width/height)))
-    return resize(img, (new_width, new_height))
 
 
 def calculate_sigmas(max_sigma, number):
