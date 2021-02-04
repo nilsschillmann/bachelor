@@ -7,6 +7,7 @@ from configparser import ConfigParser
 from datetime import date
 from collections import namedtuple
 from skimage.transform import resize
+from skimage import io
 
 
 def resize_image(img, area):
@@ -63,3 +64,9 @@ def parse_config(config_path):
                          output_folder,
                          parameter,
                          )
+
+
+def load_image(path):
+    '''Load an image file from path'''
+
+    return io.imread(path)
