@@ -32,8 +32,11 @@ def main():
     logging.info(f"sigmas: {sigmas}")
 
     folder_names = listdir(config.input_folder)
+    file_names = []
+    for folder_name in folder_names:
+        file_names += listdir(config.input_folder + '/' + folder_name)
+    file_map = []
 
-    results = {}
     for folder_name in folder_names:
 
         logging.info('Start ' + folder_name)
@@ -41,27 +44,19 @@ def main():
 
         file_names = listdir("/".join([config.input_folder, folder_name]))
 
-        logging.info('Number of Files: ' + str(len(file_names)))
 
-        folder_path = '/'.join([config.input_folder, folder_name])
-
-        pool = mp.Pool()
-        procs = {name: pool.apply_async(pipeline.run, args=('/'.join([folder_path, name]),
-                                                      sigmas,
-                                                      parameter['phog_depth'],
-                                                      parameter['hist_orientations'],
-                                                      parameter['area']))
-                  for name in file_names}
-
-        results[folder_name] = {name: p.get() for name, p in procs.items()}
 
         executiontime = time.time() - start_time
         delta = str(timedelta(seconds=executiontime))
         logging.info(f'executed in {delta :>20}')
 
-    output_file_name = '_'.join([str(p)[:3] + str(v) for p, v in parameter.items()]) + '.pkl'
-    with open('/'.join([config.output_folder, output_file_name]), 'wb') as output:
-            pickle.dump((parameter, results), output, pickle.HIGHEST_PROTOCOL)
+
+def run_and_save(input_path, output_path, parameter):
+    img = utils.load_image(input_path)
+    vector = pipeline.run(img, *parameter)
+    utils.save_feature_vector(output_path, parameter, vector)
+
+    return None
 
 
 if __name__ == '__main__':
