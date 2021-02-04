@@ -8,6 +8,7 @@ from datetime import date
 from collections import namedtuple
 from skimage.transform import resize
 from skimage import io
+import pickle
 
 
 def resize_image(img, area):
@@ -70,3 +71,21 @@ def load_image(path):
     '''Load an image file from path'''
 
     return io.imread(path)
+
+
+def save_feature_vector(path, parameter, vector):
+    '''Saves a feature vector with parameter to a file'''
+
+    Feature_Vector = namedtuple('Feature_Vector', ('parameter', 'vector'))
+
+    feature_vector = Feature_Vector(parameter, vector)
+    with open(path, 'wb') as output:
+        pickle.dump(feature_vector, output, pickle.HIGHEST_PROTOCOL)
+
+    return None
+
+
+def load_feature_vector(path):
+    '''Loads and returns a feature vector with parameter from a file'''
+
+    return pickle.load(open(path, "rb"))
