@@ -9,6 +9,9 @@ from skimage import io
 import pickle
 
 
+Feature_Vector = namedtuple('Feature_Vector', ('parameter', 'vector'))
+
+
 def calculate_sigmas(max_sigma, number):
     '''Calculate sigmas for gausian filters.'''
 
@@ -66,10 +69,8 @@ def load_image(path):
 def save_feature_vector(path, parameter, vector):
     '''Saves a feature vector with parameter to a file'''
 
-    Feature_Vector = namedtuple('Feature_Vector', ('parameter', 'vector'))
-
     feature_vector = Feature_Vector(parameter, vector)
-    with open(path, 'wb') as output:
+    with open(path + '.pkl', 'wb') as output:
         pickle.dump(feature_vector, output, pickle.HIGHEST_PROTOCOL)
 
     return None

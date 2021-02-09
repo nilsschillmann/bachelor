@@ -39,6 +39,7 @@ PROCESSES = 4
 def run(img, sigmas, depth, orientations, area):
     '''Run the complete pipeline over a given Image.'''
 
+
     img = resize_image(img, area)
     lab = convert2lab(img)
     scalespaces = create_scalespaces(lab, sigmas)
@@ -51,6 +52,7 @@ def run(img, sigmas, depth, orientations, area):
 def resize_image(img, area):
     '''Resize an image to a specific area'''
     width, height = img.shape[:2]
+    print(type(area))
     new_width = round(sqrt(area / (height/width)))
     new_height = round(sqrt(area / (width/height)))
     return resize(img, (new_width, new_height))
